@@ -1,14 +1,22 @@
-import type { Request, Response } from "express";
+import type { NextFunction, Request, Response } from "express";
 import * as walletService from "./wallet.service";
 
-export function getBalance(req: Request, res: Response) {
-  const balance = walletService.getBalance(req.params.userId);
+export async function getBalance(req: Request, res: Response, next: NextFunction) {
+  try {
+    const balance = await walletService.getBalance(req.params.userId);
 
-  res.status(200).json(balance);
+    res.status(200).json(balance);
+  } catch (error) {
+    next(error);
+  }
 }
 
-export function getHistory(req: Request, res: Response) {
-  const history = walletService.getHistory(req.params.userId);
+export async function getHistory(req: Request, res: Response, next: NextFunction) {
+  try {
+    const history = await walletService.getHistory(req.params.userId);
 
-  res.status(200).json(history);
+    res.status(200).json(history);
+  } catch (error) {
+    next(error);
+  }
 }

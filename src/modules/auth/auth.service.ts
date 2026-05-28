@@ -1,5 +1,5 @@
 import { randomUUID } from "crypto";
-import { memoryStore } from "../../storage/memory.store";
+import * as authRepository from "./auth.repository";
 import type { LoginInput, PublicUser, RegisterInput, User } from "./auth.types";
 
 function toPublicUser(user: User): PublicUser {
@@ -25,11 +25,10 @@ function validateAuthInput(input: RegisterInput | LoginInput) {
   };
 }
 
-export function register(input: RegisterInput): PublicUser {
+export async function register(input: RegisterInput): Promise<PublicUser> {
   const data = validateAuthInput(input);
-  const users = memoryStore.users as User[];
 
-  const existingUser = users.find((user) => user.email === data.email);
+  const existingUser = await authRepository.findUserByEmail(data.email);
   if (existingUser) {
     throw new Error("Email already registered");
   }
@@ -41,20 +40,17 @@ export function register(input: RegisterInput): PublicUser {
     createdAt: new Date().toISOString()
   };
 
-  users.push(user);
+  await authRepository.createUser(user);
 
   return toPublicUser(user);
 }
 
-export function login(input: LoginInput): PublicUser {
+export async function login(input: LoginInput): Promise<PublicUser> {
   const data = validateAuthInput(input);
-  const users = memoryStore.users as User[];
 
-  const user = users.find(
-    (storedUser) => storedUser.email === data.email && storedUser.password === data.password
-  );
+  const user = await authRepository.findUserByEmail(data.email);
 
-  if (!user) {
+  if (!user || user.password !== data.password) {
     throw new Error("Invalid email or password");
   }
 

@@ -1,18 +1,26 @@
-import type { Request, Response } from "express";
+import type { NextFunction, Request, Response } from "express";
 import * as ledgerService from "./ledger.service";
 
-export function createRewardLedgerEntry(req: Request, res: Response) {
-  const ledgerEntry = ledgerService.createRewardLedgerEntry(req.body);
+export async function createRewardLedgerEntry(req: Request, res: Response, next: NextFunction) {
+  try {
+    const ledgerEntry = await ledgerService.createRewardLedgerEntry(req.body);
 
-  res.status(201).json({
-    ledgerEntry
-  });
+    res.status(201).json({
+      ledgerEntry
+    });
+  } catch (error) {
+    next(error);
+  }
 }
 
-export function getLedgerEntriesByUserId(req: Request, res: Response) {
-  const ledgerEntries = ledgerService.getLedgerEntriesByUserId(req.params.userId);
+export async function getLedgerEntriesByUserId(req: Request, res: Response, next: NextFunction) {
+  try {
+    const ledgerEntries = await ledgerService.getLedgerEntriesByUserId(req.params.userId);
 
-  res.status(200).json({
-    ledgerEntries
-  });
+    res.status(200).json({
+      ledgerEntries
+    });
+  } catch (error) {
+    next(error);
+  }
 }

@@ -1,8 +1,12 @@
-import type { Request, Response } from "express";
+import type { NextFunction, Request, Response } from "express";
 import * as rewardService from "./reward.service";
 
-export function getRewardsByUserId(req: Request, res: Response) {
-  const summary = rewardService.getRewardsByUserId(req.params.userId);
+export async function getRewardsByUserId(req: Request, res: Response, next: NextFunction) {
+  try {
+    const summary = await rewardService.getRewardsByUserId(req.params.userId);
 
-  res.status(200).json(summary);
+    res.status(200).json(summary);
+  } catch (error) {
+    next(error);
+  }
 }

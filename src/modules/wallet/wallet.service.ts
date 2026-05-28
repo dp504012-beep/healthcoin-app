@@ -1,14 +1,8 @@
-import { memoryStore } from "../../storage/memory.store";
-import type { WalletBalance, WalletHistory, WalletLedgerEntry } from "./wallet.types";
+import * as ledgerRepository from "../ledger/ledger.repository";
+import type { WalletBalance, WalletHistory } from "./wallet.types";
 
-function getEntriesByUserId(userId: string): WalletLedgerEntry[] {
-  const ledgerEntries = memoryStore.ledgerEntries as WalletLedgerEntry[];
-
-  return ledgerEntries.filter((entry) => entry.userId === userId);
-}
-
-export function getBalance(userId: string): WalletBalance {
-  const entries = getEntriesByUserId(userId);
+export async function getBalance(userId: string): Promise<WalletBalance> {
+  const entries = await ledgerRepository.getLedgerEntriesByUserId(userId);
   const balance = entries.reduce((sum, entry) => sum + entry.points, 0);
 
   return {
@@ -17,9 +11,9 @@ export function getBalance(userId: string): WalletBalance {
   };
 }
 
-export function getHistory(userId: string): WalletHistory {
+export async function getHistory(userId: string): Promise<WalletHistory> {
   return {
     userId,
-    entries: getEntriesByUserId(userId)
+    entries: await ledgerRepository.getLedgerEntriesByUserId(userId)
   };
 }

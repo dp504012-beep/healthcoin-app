@@ -1,14 +1,28 @@
 import { randomUUID } from "crypto";
-import { memoryStore } from "../../storage/memory.store";
+import { activityConfig } from "../../config/activity.config";
+import { HttpError } from "../../utils/http-error";
+import * as activityRepository from "./activity.repository";
 import type { Activity, CreateActivityInput } from "./activity.types";
 
 function validateCreateActivityInput(input: CreateActivityInput) {
   if (typeof input.userId !== "string" || input.userId.trim() === "") {
-    throw new Error("userId is required");
+    throw new HttpError(400, "userId is required");
   }
 
-  if (typeof input.steps !== "number" || !Number.isInteger(input.steps) || input.steps < 0) {
-    throw new Error("steps must be a non-negative integer");
+  if (typeof input.steps !== "number") {
+    throw new HttpError(400, "steps must be a number");
+  }
+
+  if (!Number.isInteger(input.steps)) {
+    throw new HttpError(400, "steps must be an integer");
+  }
+
+  if (input.steps <= 0) {
+    throw new HttpError(400, "steps must be greater than 0");
+  }
+
+  if (input.steps > activityConfig.maxStepsPerActivity) {
+    throw new HttpError(400, `steps must be <= ${activityConfig.maxStepsPerActivity}`);
   }
 
   return {
@@ -17,9 +31,8 @@ function validateCreateActivityInput(input: CreateActivityInput) {
   };
 }
 
-export function createActivity(input: CreateActivityInput): Activity {
+export async function createActivity(input: CreateActivityInput): Promise<Activity> {
   const data = validateCreateActivityInput(input);
-  const activities = memoryStore.activities as Activity[];
 
   const activity: Activity = {
     activityId: randomUUID(),
@@ -28,7 +41,7 @@ export function createActivity(input: CreateActivityInput): Activity {
     timestamp: new Date().toISOString()
   };
 
-  activities.push(activity);
+  await activityRepository.createActivity(activity);
 
   return activity;
 }

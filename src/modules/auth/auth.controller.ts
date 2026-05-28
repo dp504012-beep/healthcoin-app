@@ -1,18 +1,26 @@
-import type { Request, Response } from "express";
+import type { NextFunction, Request, Response } from "express";
 import * as authService from "./auth.service";
 
-export function register(req: Request, res: Response) {
-  const user = authService.register(req.body);
+export async function register(req: Request, res: Response, next: NextFunction) {
+  try {
+    const user = await authService.register(req.body);
 
-  res.status(201).json({
-    user
-  });
+    res.status(201).json({
+      user
+    });
+  } catch (error) {
+    next(error);
+  }
 }
 
-export function login(req: Request, res: Response) {
-  const user = authService.login(req.body);
+export async function login(req: Request, res: Response, next: NextFunction) {
+  try {
+    const user = await authService.login(req.body);
 
-  res.status(200).json({
-    user
-  });
+    res.status(200).json({
+      user
+    });
+  } catch (error) {
+    next(error);
+  }
 }

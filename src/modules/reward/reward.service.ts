@@ -1,4 +1,4 @@
-import { memoryStore } from "../../storage/memory.store";
+import * as activityRepository from "../activity/activity.repository";
 import { stepToPointsRatio, validationThresholds } from "./rules";
 import type { RewardActivity, RewardItem, UserRewardSummary } from "./reward.types";
 
@@ -10,11 +10,11 @@ function isValidActivity(activity: RewardActivity): boolean {
   return activity.steps >= validationThresholds.minSteps;
 }
 
-export function getRewardsByUserId(userId: string): UserRewardSummary {
-  const activities = memoryStore.activities as RewardActivity[];
+export async function getRewardsByUserId(userId: string): Promise<UserRewardSummary> {
+  const activities = await activityRepository.getActivitiesByUserId(userId);
 
   const rewards: RewardItem[] = activities
-    .filter((activity) => activity.userId === userId)
+    .map((activity): RewardActivity => activity)
     .filter(isValidActivity)
     .map((activity) => ({
       activityId: activity.activityId,
