@@ -1,0 +1,93 @@
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  color: #1f2937;
+  background: #f3f4f6;
+}
+
+main {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 32px 20px;
+}
+
+h1 {
+  margin: 0 0 20px;
+  font-size: 32px;
+}
+
+h2 {
+  margin: 0 0 16px;
+}
+
+h3 {
+  margin: 20px 0 8px;
+}
+
+nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0 0 20px;
+}
+
+section,
+main > label,
+main > div {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 16px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+label {
+  display: block;
+  margin: 0 0 14px;
+  font-weight: 600;
+}
+
+input {
+  display: block;
+  width: 100%;
+  max-width: 320px;
+  padding: 10px 12px;
+  margin-top: 6px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 14px;
+  box-sizing: border-box;
+}
+
+button {
+  padding: 10px 14px;
+  border: 1px solid #2563eb;
+  border-radius: 6px;
+  color: #ffffff;
+  background: #2563eb;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+button:hover {
+  background: #1d4ed8;
+}
+
+p {
+  padding: 10px 12px;
+  margin: 8px 0;
+  border-radius: 6px;
+  background: #f9fafb;
+  border: 1px solid #edf0f3;
+  line-height: 1.4;
+}
+
+pre {
+  padding: 14px;
+  overflow: auto;
+  background: #111827;
+  color: #f9fafb;
+  border-radius: 8px;
+  line-height: 1.45;
+}
