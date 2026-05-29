@@ -1,5 +1,8 @@
 import { randomUUID } from "crypto";
 import { HttpError } from "../../utils/http-error";
+import * as activityRepository from "../activity/activity.repository";
+import * as authRepository from "../auth/auth.repository";
+import { stepToPointsRatio } from "../reward/rules";
 import * as ledgerRepository from "./ledger.repository";
 import type { CreateRewardLedgerEntryInput, LedgerEntry } from "./ledger.types";
 
@@ -12,14 +15,6 @@ function validateRewardLedgerEntryInput(input: CreateRewardLedgerEntryInput) {
     throw new HttpError(400, "activityId is required");
   }
 
-  if (typeof input.points !== "number" || !Number.isFinite(input.points)) {
-    throw new HttpError(400, "points must be a valid number");
-  }
-
-  if (input.points <= 0) {
-    throw new HttpError(400, "points must be greater than 0");
-  }
-
   if (input.type !== "EARN") {
     throw new HttpError(400, 'type must be "EARN"');
   }
@@ -27,9 +22,12 @@ function validateRewardLedgerEntryInput(input: CreateRewardLedgerEntryInput) {
   return {
     userId: input.userId.trim(),
     activityId: input.activityId.trim(),
-    points: input.points,
     type: input.type as "EARN"
   };
+}
+
+function calculatePoints(steps: number): number {
+  return Math.floor(steps / stepToPointsRatio.steps) * stepToPointsRatio.points;
 }
 
 export async function createRewardLedgerEntry(
@@ -42,11 +40,30 @@ export async function createRewardLedgerEntry(
     throw new HttpError(409, "Ledger entry already exists for activityId");
   }
 
+  const user = await authRepository.findUserById(data.userId);
+  if (!user) {
+    throw new HttpError(404, "User not found");
+  }
+
+  const activity = await activityRepository.getActivityById(data.activityId);
+  if (!activity) {
+    throw new HttpError(404, "Activity not found");
+  }
+
+  if (activity.userId !== data.userId) {
+    throw new HttpError(403, "Activity does not belong to userId");
+  }
+
+  const points = calculatePoints(activity.steps);
+  if (points <= 0) {
+    throw new HttpError(400, "Computed reward points must be greater than 0");
+  }
+
   const ledgerEntry: LedgerEntry = {
     ledgerEntryId: randomUUID(),
     userId: data.userId,
     activityId: data.activityId,
-    points: data.points,
+    points,
     type: data.type,
     createdAt: new Date().toISOString()
   };

@@ -1,6 +1,7 @@
 import { randomUUID } from "crypto";
 import { activityConfig } from "../../config/activity.config";
 import { HttpError } from "../../utils/http-error";
+import * as authRepository from "../auth/auth.repository";
 import * as activityRepository from "./activity.repository";
 import type { Activity, CreateActivityInput } from "./activity.types";
 
@@ -33,6 +34,11 @@ function validateCreateActivityInput(input: CreateActivityInput) {
 
 export async function createActivity(input: CreateActivityInput): Promise<Activity> {
   const data = validateCreateActivityInput(input);
+  const user = await authRepository.findUserById(data.userId);
+
+  if (!user) {
+    throw new HttpError(404, "User not found");
+  }
 
   const activity: Activity = {
     activityId: randomUUID(),

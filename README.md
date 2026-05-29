@@ -1,25 +1,72 @@
 # HealthCoin MVP
 
-HealthCoin is a minimal MVP for tracking health activity and rewards.
+HealthCoin is a local demo MVP for tracking health activity, calculating reward points, writing append-only ledger entries, and deriving a wallet balance from the ledger.
 
-Current flow:
+This repository is a demo release candidate foundation. It does not include blockchain integration, token contracts, NFTs, smart contracts, or on-chain settlement.
 
-```txt
-Register/Login -> Activity -> Reward -> Ledger -> Wallet
-```
+## Current MVP Scope
 
-## Backend
-
-The backend is an Express API running on:
+The current demo flow is:
 
 ```txt
-http://localhost:3000
+Register -> Submit Activity -> Create Ledger Entry -> Wallet Balance Updates
 ```
 
-Install dependencies and initialize SQLite from the project root:
+Implemented scope:
+
+- User registration and login
+- Activity submission with step validation
+- Reward calculation from persisted activity
+- Ledger reward entry creation
+- Wallet balance and history derived from ledger entries
+- React frontend for the demo workflow
+- SQLite persistence for local development/demo use
+- Backend tests for the core flow
+
+Not included in this release candidate:
+
+- JWT/session authentication
+- Blockchain or smart contract integration
+- Token issuance
+- NFT logic
+- Production deployment configuration
+
+## Tech Stack
+
+Backend:
+
+- Node.js
+- TypeScript
+- Express
+- SQLite
+- Jest
+- Supertest
+- bcryptjs
+
+Frontend:
+
+- React
+- Vite
+- JavaScript
+- Plain CSS
+
+## Backend Setup
+
+Install dependencies from the repository root:
 
 ```bash
 npm install
+```
+
+Create a backend `.env` file if you need custom local values:
+
+```bash
+cp .env.example .env
+```
+
+Initialize the SQLite database:
+
+```bash
 npm run db:init
 ```
 
@@ -27,6 +74,12 @@ Start the backend:
 
 ```bash
 npm run dev
+```
+
+Default backend URL:
+
+```txt
+http://localhost:3000
 ```
 
 Health check:
@@ -41,99 +94,110 @@ Expected response:
 { "status": "ok" }
 ```
 
-## Frontend
+## Frontend Setup
 
-The frontend is a React Vite app in the `frontend/` folder.
-
-Start the frontend:
+Install frontend dependencies:
 
 ```bash
 cd frontend
 npm install
+```
+
+Create a frontend `.env` file if the backend URL differs from the default:
+
+```bash
+cp .env.example .env
+```
+
+Start the frontend:
+
+```bash
 npm run dev
 ```
 
-Open the Vite preview URL shown in the terminal, usually:
+Default frontend URL:
 
 ```txt
 http://127.0.0.1:5173
 ```
 
-## Manual Test Flow
+## Environment Variables
 
-1. Register or login with email and password.
-2. Submit an activity with step count.
-3. View reward points calculated from persisted activity.
-4. Create a ledger reward entry manually.
-5. Open wallet to view balance and ledger history.
-
-Full flow:
+Backend `.env.example`:
 
 ```txt
-Register/Login -> Activity -> Reward -> Ledger -> Wallet
+PORT=3000
+DATABASE_PATH=data/healthcoin.sqlite
 ```
 
-Duplicate ledger entries for the same `activityId` are rejected with:
+Frontend `frontend/.env.example`:
 
 ```txt
-HTTP 409 Conflict
+VITE_API_BASE_URL=http://localhost:3000
 ```
 
-## Activity Validation
+## Database
 
-Activity input is validated before persistence.
-
-Rules:
-
-- `userId` must be a non-empty string.
-- `steps` must be a number.
-- `steps` must be an integer.
-- `steps` must be greater than `0`.
-- `steps` must be less than or equal to `100000`.
-
-The current maximum is:
-
-```txt
-maxStepsPerActivity = 100000
-```
-
-Invalid activity input returns:
-
-```txt
-HTTP 400 Bad Request
-```
-
-## Storage
-
-This MVP now uses SQLite storage.
-
-SQLite setup:
-
-```bash
-npm run db:init
-```
-
-The database file is created at:
+The backend uses SQLite. By default, the database file is:
 
 ```txt
 data/healthcoin.sqlite
 ```
 
-Wallet balance is not stored directly. Wallet balance and history are derived from ledger entries.
+Initialize tables safely with:
 
-No blockchain integration is included in this MVP.
-
-## Latest Verification
-
-Validation-hardening full flow test passed:
-
-```txt
-Register/Login -> Activity -> Reward -> Ledger -> Wallet
+```bash
+npm run db:init
 ```
 
-Verified:
+The init command uses `CREATE TABLE IF NOT EXISTS`; it does not reset or overwrite existing data.
 
-- Invalid activity inputs return `HTTP 400`.
-- Reward reads persisted activities.
-- Ledger duplicate `activityId` returns `HTTP 409`.
-- Wallet balance equals the sum of ledger history entries.
+## Commands
+
+Backend commands from the repository root:
+
+```bash
+npm run db:init
+npm run dev
+npm run build
+npm test
+npm run demo:seed
+```
+
+Frontend commands from `frontend/`:
+
+```bash
+npm run dev
+npm run build
+npm run preview
+```
+
+## Local Demo Flow
+
+1. Start the backend:
+
+```bash
+npm run db:init
+npm run dev
+```
+
+2. Start the frontend in another terminal:
+
+```bash
+cd frontend
+npm run dev
+```
+
+3. Open the frontend URL.
+4. Register a user.
+5. Submit an activity with `2500` steps.
+6. Create a ledger entry.
+7. Open the wallet view.
+8. Confirm wallet balance is `20`.
+
+The expected result is `2500` steps -> `20` reward points -> wallet balance `20`.
+
+More details:
+
+- Demo guide: `docs/demo-flow.md`
+- API reference: `docs/api.md`

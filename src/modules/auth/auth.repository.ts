@@ -67,3 +67,19 @@ export function findUserByEmail(email: string): Promise<User | null> {
 export function findUserById(id: string): Promise<User | null> {
   return getUser("SELECT * FROM users WHERE id = ?", [id]);
 }
+
+export async function updateUserPassword(id: string, password: string): Promise<void> {
+  const database = openDatabase();
+
+  try {
+    await new Promise<void>((resolve, reject) => {
+      database.run(
+        "UPDATE users SET password = ? WHERE id = ?",
+        [password, id],
+        (error) => (error ? reject(error) : resolve())
+      );
+    });
+  } finally {
+    await closeDatabase(database);
+  }
+}

@@ -1,9 +1,13 @@
 import fs from "fs";
 import path from "path";
 import sqlite3 from "sqlite3";
+import { getEnv } from "./env";
 
-export const databaseDirectory = path.resolve(process.cwd(), "data");
-export const databasePath = path.join(databaseDirectory, "healthcoin.sqlite");
+export const databasePath = path.resolve(
+  process.cwd(),
+  getEnv("DATABASE_PATH", "data/healthcoin.sqlite")
+);
+export const databaseDirectory = path.dirname(databasePath);
 
 export function openDatabase(): sqlite3.Database {
   fs.mkdirSync(databaseDirectory, { recursive: true });
@@ -72,6 +76,41 @@ export async function initializeDatabase(): Promise<void> {
         created_at TEXT NOT NULL
       )`
     );
+  } finally {
+    await closeDatabase(database);
+  }
+}
+
+function getRequiredTableCount(database: sqlite3.Database): Promise<number> {
+  return new Promise((resolve, reject) => {
+    database.get(
+      `SELECT COUNT(*) AS count
+       FROM sqlite_master
+       WHERE type = 'table'
+         AND name IN ('users', 'activities', 'ledger_entries')`,
+      (error, row: { count: number } | undefined) => {
+        if (error) {
+          reject(error);
+          return;
+        }
+
+        resolve(row?.count ?? 0);
+      }
+    );
+  });
+}
+
+export async function verifyDatabaseInitialized(): Promise<void> {
+  const database = openDatabase();
+
+  try {
+    const tableCount = await getRequiredTableCount(database);
+
+    if (tableCount !== 3) {
+      throw new Error(
+        `Database is not initialized at ${databasePath}. Run npm run db:init before starting the server.`
+      );
+    }
   } finally {
     await closeDatabase(database);
   }
